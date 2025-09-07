@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Quality Analysis Framework</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            padding: 60px 80px;
+            box-sizing: border-box;
+            background: white;
+            overflow-y: auto;
+        }
+        
+        .slide.active {
+            display: block;
+        }
+        
+        .slide h1 {
+            color: #1f2937;
+            font-size: 2.2em;
+            font-weight: 600;
+            margin-bottom: 30px;
+            text-align: left;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 15px;
+        }
+        
+        .slide h2 {
+            color: #374151;
+            font-size: 1.6em;
+            font-weight: 500;
+            margin-bottom: 20px;
+            margin-top: 30px;
+        }
+        
+        .slide h3 {
+            color: #4b5563;
+            font-size: 1.2em;
+            font-weight: 500;
+            margin-bottom: 15px;
+            margin-top: 25px;
+        }
+        
+        .two-column {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px;
+        }
+        
+        .column {
+            flex: 1;
+        }
+        
+        .code-block {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .results-table th {
+            background: #f9fafb;
+            color: #374151;
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .results-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .results-table tr:hover {
+            background: #f9fafb;
+        }
+        
+        .status-critical { color: #dc2626; font-weight: 600; }
+        .status-warning { color: #d97706; font-weight: 600; }
+        .status-good { color: #059669; font-weight: 600; }
+        
+        .metric-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .metric-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .metric-label {
+            font-size: 1.1em;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .highlight-box {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .challenge-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .solution-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+        
+        .nav-btn {
+            background: #374151;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 0 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        .nav-btn:hover {
+            background: #1f2937;
+        }
+        
+        .nav-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .slide-counter {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: #374151;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        
+        ul, ol {
+            line-height: 1.6;
+            margin-left: 20px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        strong {
+            color: #1f2937;
+        }
+        
+        .key-points {
+            background: #f8fafc;
+            border-left: 4px solid #374151;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        @media print {
+            .navigation, .slide-counter { display: none; }
+            .slide { height: auto; page-break-after: always; }
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-counter">
+        <span id="current-slide">1</span> / <span id="total-slides">5</span>
+    </div>
+    
+    <div class="navigation">
+        <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)">Previous</button>
+        <button class="nav-btn" id="next-btn" onclick="changeSlide(1)">Next</button>
+    </div>
+
+    <!-- Slide 1: Project Overview -->
+    <div class="slide active">
+        <h1>Data Quality Analysis Framework</h1>
+        <h2>Automated Quality Assessment for Financial Data</h2>
+        
+        <div class="two-column">
+            <div class="column">
+                <h3>Project Objective</h3>
+                <p>Developed an automated data quality assessment framework to evaluate the integrity and reliability of extracted company financial data across multiple quality dimensions.</p>
+                
+                <h3>Technical Approach</h3>
+                <ul>
+                    <li><strong>Framework:</strong> Python-based DataQualityChecker class</li>
+                    <li><strong>Dataset:</strong> 372 company financial records</li>
+                    <li><strong>Quality Dimensions:</strong> 4 core measures implemented</li>
+                    <li><strong>Output:</strong> Automated flagging and comprehensive reporting</li>
+                </ul>
+                
+                <h3>Key Deliverables</h3>
+                <ul>
+                    <li>Automated quality assessment pipeline</li>
+                    <li>Binary flagging system for each quality issue</li>
+                    <li>Excel output with quality flags</li>
+                    <li>JSON summary report with metrics</li>
+                </ul>
+            </div>
+            
+            <div class="column">
+                <div class="metric-box">
+                    <div class="metric-number">372</div>
+                    <div class="metric-label">Records Analyzed</div>
+                </div>
+                
+                <h3>Implementation Architecture</h3>
+                <div class="code-block">
+class DataQualityChecker:
+    def __init__(self):
+        self.quality_issues = {}
+    
+    def check_completeness(self, df)
+    def check_consistency(self, df)
+    def check_validity(self, df)
+    def check_uniqueness(self, df)
+    
+    def run_all_checks(self, df)
+    def generate_report(self, df)
+                </div>
+                
+                <div class="key-points">
+                    <strong>Business Impact:</strong> Provides systematic approach to identify data quality issues early in the data pipeline, enabling proactive data remediation.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 2: Quality Assessment Results -->
+    <div class="slide">
+        <h1>Quality Assessment Results</h1>
+        
+        <div class="metric-box">
+            <div class="metric-number">86.36%</div>
+            <div class="metric-label">Overall Data Quality Score</div>
+        </div>
+        
+        <h2>Quality Measures Breakdown</h2>
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Quality Dimension</th>
+                    <th>Issues Identified</th>
+                    <th>Percentage of Records</th>
+                    <th>Priority Level</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Completeness</strong></td>
+                    <td>93</td>
+                    <td>25.00%</td>
+                    <td class="status-critical">High Priority</td>
+                </tr>
+                <tr>
+                    <td><strong>Validity</strong></td>
+                    <td>70</td>
+                    <td>18.82%</td>
+                    <td class="status-warning">Medium Priority</td>
+                </tr>
+                <tr>
+                    <td><strong>Consistency</strong></td>
+                    <td>40</td>
+                    <td>10.75%</td>
+                    <td class="status-warning">Medium Priority</td>
+                </tr>
+                <tr>
+                    <td><strong>Uniqueness</strong></td>
+                    <td>0</td>
+                    <td>0.00%</td>
+                    <td class="status-good">No Issues</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="summary-grid">
+            <div>
+                <h3>Critical Findings</h3>
+                <ul>
+                    <li><strong>Missing Data:</strong> 25% of records have missing values in essential columns</li>
+                    <li><strong>Format Issues:</strong> 18.82% contain invalid data formats or ranges</li>
+                    <li><strong>Inconsistencies:</strong> 10.75% have formatting inconsistencies</li>
+                    <li><strong>No Duplicates:</strong> All records are unique based on key identifiers</li>
+                </ul>
+            </div>
+            
+            <div>
+                <h3>Affected Data Elements</h3>
+                <ul>
+                    <li>Time value references</li>
+                    <li>Provider identification keys</li>
+                    <li>Official company names</li>
+                    <li>Financial period end dates</li>
+                    <li>Revenue figures and units</li>
+                    <li>Geographic and industry codes</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: Methodology & Framework Design -->
+    <div class="slide">
+        <h1>Methodology & Framework Design</h1>
+        
+        <h2>Quality Dimension Selection Rationale</h2>
+        
+        <div class="two-column">
+            <div class="column">
+                <h3>Selected Quality Dimensions</h3>
+                <ol>
+                    <li><strong>Completeness</strong>
+                        <ul>
+                            <li>Measures missing values in critical fields</li>
+                            <li>Essential for financial data integrity</li>
+                        </ul>
+                    </li>
+                    <li><strong>Validity</strong>
+                        <ul>
+                            <li>Validates data against business rules</li>
+                            <li>Checks ranges, formats, and constraints</li>
+                        </ul>
+                    </li>
+                    <li><strong>Consistency</strong>
+                        <ul>
+                            <li>Ensures uniform formatting standards</li>
+                            <li>Validates standardized codes and formats</li>
+                        </ul>
+                    </li>
+                    <li><strong>Uniqueness</strong>
+                        <ul>
+                            <li>Identifies duplicate records</li>
+                            <li>Prevents data redundancy issues</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+            
+            <div class="column">
+                <h3>Business Rule Implementation</h3>
+                <div class="code-block">
+def check_validity(self, df):
+    # Revenue validation
+    revenue_valid = (df['REVENUE'] >= 0) & 
+                   (df['REVENUE'] <= 1e15)
+    
+    # Year range validation  
+    year_valid = (df['timevalue'] >= 1900) & 
+                (df['timevalue'] <= 2030)
+    
+    # Currency code format
+    currency_valid = df['unit_REVENUE'].str.match(r'^[A-Z]{3}$')
+                </div>
+                
+                <h3>Design Principles</h3>
+                <ul>
+                    <li><strong>Industry Standards:</strong> Aligned with DAMA-DMBOK framework</li>
+                    <li><strong>Financial Focus:</strong> Tailored for financial dataset requirements</li>
+                    <li><strong>Automated Processing:</strong> Rule-based, deterministic checks</li>
+                    <li><strong>Actionable Results:</strong> Clear identification of issues for remediation</li>
+                </ul>
+                
+                <div class="highlight-box">
+                    <strong>Key Decision:</strong> Focused on measurable, objective quality dimensions that could be automated and provide clear remediation guidance.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: Technical Implementation -->
+    <div class="slide">
+        <h1>Technical Implementation</h1>
+        
+        <div class="two-column">
+            <div class="column">
+                <h3>Processing Pipeline</h3>
+                <ol>
+                    <li><strong>Data Ingestion</strong>
+                        <ul>
+                            <li>Excel file loading with error handling</li>
+                            <li>Data type validation and conversion</li>
+                        </ul>
+                    </li>
+                    <li><strong>Quality Assessment</strong>
+                        <ul>
+                            <li>Sequential execution of 4 quality checks</li>
+                            <li>Binary flag generation for each issue</li>
+                        </ul>
+                    </li>
+                    <li><strong>Results Aggregation</strong>
+                        <ul>
+                            <li>Overall quality score calculation</li>
+                            <li>Statistical summary generation</li>
+                        </ul>
+                    </li>
+                    <li><strong>Output Generation</strong>
+                        <ul>
+                            <li>Enhanced Excel file with quality flags</li>
+                            <li>Comprehensive JSON report</li>
+                        </ul>
+                    </li>
+                </ol>
+                
+                <h3>Error Handling & Logging</h3>
+                <ul>
+                    <li>Comprehensive exception management</li>
+                    <li>Progress tracking and status updates</li>
+                    <li>Graceful handling of missing data</li>
+                </ul>
+            </div>
+            
+            <div class="column">
+                <h3>Core Algorithm Implementation</h3>
+                <div class="code-block">
+def run_all_checks(self, df):
+    # Execute quality checks
+    df = self.check_completeness(df)
+    df = self.check_consistency(df)
+    df = self.check_validity(df)
+    df = self.check_uniqueness(df)
+    
+    # Generate overall quality flag
+    flag_columns = [col for col in df.columns 
+                   if col.startswith('flag_')]
+    df['flag_overall'] = df[flag_columns].max(axis=1)
+    
+    return df
+                </div>
+                
+                <h3>Quality Metrics Calculation</h3>
+                <div class="code-block">
+def calculate_quality_score(self, df):
+    total_records = len(df)
+    issues_found = df['flag_overall'].sum()
+    
+    quality_score = ((total_records - issues_found) 
+                    / total_records) * 100
+    
+    return quality_score
+                </div>
+                
+                <h3>Performance Characteristics</h3>
+                <ul>
+                    <li><strong>Processing Time:</strong> < 1 second for 372 records</li>
+                    <li><strong>Memory Efficiency:</strong> In-memory processing</li>
+                    <li><strong>Scalability:</strong> Linear complexity O(n)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5: Challenges & Solutions -->
+    <div class="slide">
+        <h1>Main Challenge & Technical Solution</h1>
+        
+        <h2>Primary Technical Challenge</h2>
+        <div class="challenge-box">
+            <h3>JSON Serialization Compatibility Issue</h3>
+            <p><strong>Problem:</strong> Pandas data types (Int64DType, Float64DType) cannot be directly serialized to JSON format, causing runtime errors during quality report generation.</p>
+            <p><strong>Impact:</strong> Prevented automated generation of summary reports for quality metrics tracking.</p>
+            <p><strong>Error:</strong> <code>TypeError: Object of type Int64DType is not JSON serializable</code></p>
+        </div>
+        
+        <div class="solution-box">
+            <h3>Solution Approach</h3>
+            <p><strong>Root Cause Analysis:</strong> The DataFrame dtypes dictionary contains pandas-specific type objects that don't translate to JSON.</p>
+            <p><strong>Solution:</strong> Convert all pandas data types to string representations before JSON serialization.</p>
+        </div>
+        
+        <div class="two-column">
+            <div class="column">
+                <h3>Technical Implementation</h3>
+                <div class="code-block">
+# Problem Code:
+report_data = {
+    'total_records': len(df),
+    'data_types': df.dtypes.to_dict()  # Error here
+}
+
+# Solution:
+report_data = {
+    'total_records': len(df),
+    'data_types': {col: str(dtype) 
+                  for col, dtype in df.dtypes.items()}
+}
+                </div>
+                
+                <h3>Additional Challenges Addressed</h3>
+                <ul>
+                    <li><strong>Mixed Data Types:</strong> Financial columns with inconsistent formats</li>
+                    <li><strong>Missing Value Handling:</strong> Robust null value processing across all checks</li>
+                    <li><strong>Business Rule Validation:</strong> Complex regex patterns for format checking</li>
+                    <li><strong>Performance:</strong> Vectorized operations for efficient processing</li>
+                </ul>
+            </div>
+            
+            <div class="column">
+                <h3>Project Results</h3>
+                <ul>
+                    <li><strong>Successfully Processed:</strong> 372 company records</li>
+                    <li><strong>Issues Flagged:</strong> 203 data quality problems identified</li>
+                    <li><strong>Processing Time:</strong> Under 1 second execution</li>
+                    <li><strong>Output Generated:</strong> Excel file with quality flag columns</li>
+                </ul>
+                
+                <h3>Key Learning</h3>
+                <div class="highlight-box">
+                    <strong>Cross-System Compatibility:</strong> Always validate data type compatibility when building integrations between different systems or formats, especially for serialization processes.
+                </div>
+                
+               
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        document.getElementById('total-slides').textContent = totalSlides;
+        
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+            document.getElementById('prev-btn').disabled = currentSlide === 0;
+            document.getElementById('next-btn').disabled = currentSlide === totalSlides - 1;
+        }
+        
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+        
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>
