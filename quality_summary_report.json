@@ -1,0 +1,63 @@
+{
+  "total_records": 372,
+  "quality_measures": {
+    "completeness": {
+      "total_issues": 93,
+      "percentage": 25.0,
+      "description": "Missing values in critical columns: ['timevalue', 'providerkey', 'companynameofficial', 'fiscalperiodend', 'operationstatustype', 'ipostatustype', 'geonameen', 'industrycode', 'REVENUE', 'unit_REVENUE']"
+    },
+    "consistency": {
+      "total_issues": 40,
+      "percentage": 10.75268817204301,
+      "description": "Inconsistent formatting in company names, status types, or currency codes"
+    },
+    "validity": {
+      "total_issues": 70,
+      "percentage": 18.817204301075268,
+      "description": "Invalid data ranges, formats, or values detected"
+    },
+    "uniqueness": {
+      "total_issues": 0,
+      "percentage": 0.0,
+      "description": "Duplicate records based on columns: ['providerkey', 'timevalue', 'fiscalperiodend']"
+    }
+  },
+  "overall_quality_score": 86.35752688172043,
+  "timestamp": "2025-09-07T12:31:28.009111",
+  "dataset_info": {
+    "columns": [
+      "timevalue",
+      "providerkey",
+      "companynameofficial",
+      "fiscalperiodend",
+      "operationstatustype",
+      "ipostatustype",
+      "geonameen",
+      "industrycode",
+      "REVENUE",
+      "unit_REVENUE",
+      "flag_completeness",
+      "flag_consistency",
+      "flag_validity",
+      "flag_uniqueness",
+      "flag_overall"
+    ],
+    "data_types": {
+      "timevalue": "int64",
+      "providerkey": "object",
+      "companynameofficial": "object",
+      "fiscalperiodend": "object",
+      "operationstatustype": "object",
+      "ipostatustype": "object",
+      "geonameen": "object",
+      "industrycode": "object",
+      "REVENUE": "float64",
+      "unit_REVENUE": "object",
+      "flag_completeness": "int64",
+      "flag_consistency": "int64",
+      "flag_validity": "int64",
+      "flag_uniqueness": "int64",
+      "flag_overall": "int64"
+    }
+  }
+}
